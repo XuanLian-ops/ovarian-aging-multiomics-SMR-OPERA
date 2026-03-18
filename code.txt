@@ -1,11 +1,86 @@
-#SMR分析代码
+## Step-by-step analysis pipeline
+
+This section provides a detailed, reproducible workflow for integrating GWAS and multi-omics QTL data using SMR and OPERA.
+
+
+### Step 1: GWAS data preparation
+GWAS summary statistics for age at natural menopause (ANM) were obtained from public sources.
+
+#### Processing steps:
+1. Remove SNPs with missing values  
+2. Filter SNPs with minor allele frequency (MAF) < 0.01  
+3. Harmonize alleles with QTL datasets  
+4. Format GWAS summary statistics with required columns: SNP, A1, A2, freq, beta, se, p
+
+
+#### Output:
+- `gwas.txt` (formatted GWAS summary statistics)
+
+
+### Step 2: QTL data preparation and convert QTL data to BESD format
+QTL summary statistics (pQTL, eQTL, sQTL, mQTL) were formatted into SMR-compatible input files.
+
+#### Required file formats:
+.esd file (per probe/gene): Chr SNP Bp A1 A2 Freq Beta se p
+.flist file (list of probes): Chr ProbeID GeneticDistance ProbeBp Gene Orientation PathOfEsd
+
+All QTL datasets were converted into BESD format using SMR.
+
+bash
 smr-1.3.1 --eqtl-flist qtl.flist --make-besd --out qtl_besd
-smr --bfile reference/g1000_eur --gwas-summary data/gwas/gwas.txt --beqtl-summary data/pqtl/pqtl_besd --diff-freq-prop 0.2 --thread-num 10 --out smr_result/pqtl/pqtl_smr
-smr --bfile reference/g1000_eur --gwas-summary data/gwas/gwas.txt --beqtl-summary data/eqtl/eqtl_besd --diff-freq-prop 0.2 --thread-num 10 --out smr_result/eqtl/eqtl_smr
-smr --bfile reference/g1000_eur --gwas-summary data/gwas/gwas.txt --beqtl-summary data/sqtl/sqtl_besd --diff-freq-prop 0.2 --thread-num 10 --out smr_result/sqtl/sqtl_smr
-smr --bfile reference/g1000_eur --gwas-summary data/gwas/gwas.txt --beqtl-summary data/mqtl/mqtl_besd --thread-num 10 --out smr_result/mqtl/mqtl_smr
-#OPERA分析代码
-opera --besd-flist mylist --gwas-summary mygwas.ma --mbfile mybdatalist --estimate-pi --out myopera 
-opera --besd-flist mylist --gwas-summary mygwas.ma --bfile mydata --sample-overlap --estimate-pi --extract-snp mysnplist --prior-var 0.02,0.02 --pi-wind 100 --out my opera --thread-num 3 
-opera --besd-flist mylist --extract-gwas-loci myloci --chr X --gwas-summary mygwas.ma --bfile mydata --prior-pi-file myopera.pi --prior-var-file myopera.var --out myopera_chrX 
-opera --besd-flist mylist1 --gwas-summary mygwas.ma --bfile mydata --beqtl-summary xQTL1 --out myplot --plot --probe ENSG00000XXXXXX --probe-wind 500 --gene-list glist-hg19
+
+Output:
+*.besd files for downstream SMR analysis
+
+### Step 3: SMR analysis and HEIDI test
+SMR analysis was performed to identify pleiotropic associations between SNPs and ovarian aging.
+
+bash
+smr --bfile reference/g1000_eur \
+    --gwas-summary data/gwas/gwas.txt \
+    --beqtl-summary data/pqtl/pqtl_besd \
+    --diff-freq-prop 0.2 \
+    --thread-num 10 \
+    --out smr_result/pqtl_smr
+
+Repeated for: pQTL, eQTL, sQTL, mQTL
+
+The HEIDI test was conducted within the SMR framework to distinguish pleiotropy from linkage.
+
+Significant associations were retained based on:
+Passing Bonferroni-corrected SMR significance threshold(adjusted for the number of tested probes within each omics dataset).
+HEIDI p-value > 0.01
+
+Output:
+List of significant genes for each omics layer
+
+Step 4: OPERA multi-omics integration
+OPERA was used to integrate multiple omics layers and identify cross-omics associations.
+
+Step 4.1: Estimate prior parameters
+opera --besd-flist mylist \
+      --gwas-summary mygwas.ma \
+      --mbfile mybdatalist \
+      --estimate-pi \
+      --out myopera
+
+Step 4.2: Multi-omics integration
+opera --besd-flist mylist \
+      --gwas-summary mygwas.ma \
+      --bfile mydata \
+      --sample-overlap \
+      --estimate-pi \
+      --out myopera
+
+Output:
+Integrated multi-omics association results
+
+Step 5: Functional enrichment analysis
+
+Functional enrichment analysis was performed using the Metascape web platform: https://metascape.org
+
+Step 6: Single-cell analysis
+(To be added)
+
+Step 7: Functional validation
+Experimental validation was conducted independently and is not included in this repository.
