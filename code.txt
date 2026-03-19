@@ -75,11 +75,11 @@ opera --besd-flist mylist \
 Integrated multi-omics association results
 
 
-### Step 5: Functional enrichment analysis
+### Step 5.1: Functional enrichment analysis
 Functional enrichment analysis was performed using the Metascape web platform: https://metascape.org
 
 
-### Step 6: Single-cell analysis
+### Step 5.2: Single-cell analysis
 Single-cell RNA sequencing (scRNA-seq) data were used to characterize the expression patterns of prioritized genes across ovarian cell types and species.
 
 
@@ -89,14 +89,14 @@ Preprocessed Seurat objects were used:
 - Monkey ovary: `sce_monkey.Rdata`  
 - Mouse ovary: `scRNA_mouse_ovary.Rdata`  
 
-#### Step 6.1: Data loading----r
+#### Step 5.2.1: Data loading
 library(Seurat)
 load("oa_wang.Rdata")
 load("sce_monkey.Rdata")
 load("scRNA_mouse_ovary.Rdata")
 scRNA <- oa_wang
 
-#### Step 6.2: UMAP visualization
+#### Step 5.2.2: UMAP visualization
 Cell-type distributions were visualized using UMAP embedding.
 
 cell_colors <- c(
@@ -116,7 +116,7 @@ DimPlot(scRNA,
   scale_color_manual(values = cell_colors) +
   theme_classic()
 
-#### Step 6.3: Gene expression visualization
+#### Step 5.2.3: Gene expression visualization
 Expression patterns of prioritized genes were visualized using dot plots.
 
 library(scRNAtoolVis)
@@ -142,7 +142,7 @@ jjDotPlot(object = subset(scRNA, celltype == "GC"),
           scale = TRUE)
 Note: Mouse data require gene symbols in lowercase format.
 
-#### Step 6.4: Differential expression analysis
+#### Step 5.2.4: Differential expression analysis
 Differential expression analysis between age groups was performed using Seurat:
 
 diff_gene <- FindMarkers(scRNA,
@@ -156,5 +156,5 @@ Gene expression patterns across cell types and groups
 Differentially expressed genes between age groups
 
 
-### Step 7: Functional validation
+### Step 5.3: Functional validation
 Experimental validation was conducted independently and is not included in this repository.
