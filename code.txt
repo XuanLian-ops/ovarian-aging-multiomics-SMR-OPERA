@@ -1,5 +1,4 @@
 ## Step-by-step analysis pipeline
-
 This section provides a detailed, reproducible workflow for integrating GWAS and multi-omics QTL data using SMR and OPERA.
 
 
@@ -12,9 +11,8 @@ GWAS summary statistics for age at natural menopause (ANM) were obtained from pu
 3. Harmonize alleles with QTL datasets  
 4. Format GWAS summary statistics with required columns: SNP, A1, A2, freq, beta, se, p
 
-
 #### Output:
-- `gwas.txt` (formatted GWAS summary statistics)
+#### `gwas.txt` (formatted GWAS summary statistics)
 
 
 ### Step 2: QTL data preparation and convert QTL data to BESD format
@@ -23,14 +21,14 @@ QTL summary statistics (pQTL, eQTL, sQTL, mQTL) were formatted into SMR-compatib
 #### Required file formats:
 .esd file (per probe/gene): Chr SNP Bp A1 A2 Freq Beta se p
 .flist file (list of probes): Chr ProbeID GeneticDistance ProbeBp Gene Orientation PathOfEsd
-
 All QTL datasets were converted into BESD format using SMR.
 
 bash
 smr-1.3.1 --eqtl-flist qtl.flist --make-besd --out qtl_besd
 
 Output:
-*.besd files for downstream SMR analysis
+#### .besd files for downstream SMR analysis
+
 
 ### Step 3: SMR analysis and HEIDI test
 SMR analysis was performed to identify pleiotropic associations between SNPs and ovarian aging.
@@ -51,20 +49,21 @@ Significant associations were retained based on:
 Passing Bonferroni-corrected SMR significance threshold(adjusted for the number of tested probes within each omics dataset).
 HEIDI p-value > 0.01
 
-Output:
+#### Output:
 List of significant genes for each omics layer
 
-Step 4: OPERA multi-omics integration
+
+### Step 4: OPERA multi-omics integration
 OPERA was used to integrate multiple omics layers and identify cross-omics associations.
 
-Step 4.1: Estimate prior parameters
+#### Step 4.1: Estimate prior parameters
 opera --besd-flist mylist \
       --gwas-summary mygwas.ma \
       --mbfile mybdatalist \
       --estimate-pi \
       --out myopera
 
-Step 4.2: Multi-omics integration
+#### Step 4.2: Multi-omics integration
 opera --besd-flist mylist \
       --gwas-summary mygwas.ma \
       --bfile mydata \
@@ -72,15 +71,89 @@ opera --besd-flist mylist \
       --estimate-pi \
       --out myopera
 
-Output:
+#### Output:
 Integrated multi-omics association results
 
-Step 5: Functional enrichment analysis
 
+### Step 5: Functional enrichment analysis
 Functional enrichment analysis was performed using the Metascape web platform: https://metascape.org
 
-Step 6: Single-cell analysis
-(To be added)
+### Step 6: Single-cell analysis
+Single-cell RNA sequencing (scRNA-seq) data were used to characterize the expression patterns of prioritized genes across ovarian cell types and species.
 
-Step 7: Functional validation
+
+#### Input data
+Preprocessed Seurat objects were used:
+- Human ovary: `oa_wang.Rdata`  
+- Monkey ovary: `sce_monkey.Rdata`  
+- Mouse ovary: `scRNA_mouse_ovary.Rdata`  
+
+#### Step 6.1: Data loading----r
+library(Seurat)
+load("oa_wang.Rdata")
+load("sce_monkey.Rdata")
+load("scRNA_mouse_ovary.Rdata")
+scRNA <- oa_wang
+
+#### Step 6.2: UMAP visualization
+Cell-type distributions were visualized using UMAP embedding.
+
+cell_colors <- c(
+  "GC" = "#c1c88a",
+  "Oo" = "#dee68c",
+  "endo" = "#d1464a",
+  "mono" = "#f5c1be",
+  "NK&T" = "#4f7f9d",
+  "SMC" = "#c6b15e",
+  "T&S" = "#3d6c5c"
+)
+DimPlot(scRNA,
+        reduction = "umap",
+        group.by = "celltype",
+        label = TRUE,
+        pt.size = 1.5) +
+  scale_color_manual(values = cell_colors) +
+  theme_classic()
+
+#### Step 6.3: Gene expression visualization
+Expression patterns of prioritized genes were visualized using dot plots.
+
+library(scRNAtoolVis)
+genes <- c('MSH6','MC1R','RAD52','RBBP8','XRCC5',
+           'BABAM2','SIRT1','RAD18','FANCM','SPATA18')
+jjDotPlot(object = scRNA,
+          id = "celltype",
+          gene = genes,
+          scale = TRUE,
+          dot.col = c('#692F7C','#D96558','#F6C63C'),
+          midpoint = 0)
+
+Group-level comparisons:
+jjDotPlot(object = scRNA,
+          id = "group",
+          gene = genes,
+          scale = TRUE)
+
+Cell-type-specific analysis (example: granulosa cells):
+jjDotPlot(object = subset(scRNA, celltype == "GC"),
+          id = "group",
+          gene = genes,
+          scale = TRUE)
+Note: Mouse data require gene symbols in lowercase format.
+
+#### Step 6.4: Differential expression analysis
+Differential expression analysis between age groups was performed using Seurat:
+
+diff_gene <- FindMarkers(scRNA,
+                         group.by = "group",
+                         ident.1 = "old",
+                         ident.2 = "young")
+
+#### Output
+UMAP visualization of ovarian cell types
+Gene expression patterns across cell types and groups
+Differentially expressed genes between age groups
+
+
+### Step 7: Functional validation
 Experimental validation was conducted independently and is not included in this repository.
