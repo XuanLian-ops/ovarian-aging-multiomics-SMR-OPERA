@@ -1,0 +1,2 @@
+1. Functional enrichment analysis was performed using the Metascape web platform: https://metascape.org
+2. Functional validation: Experimental validation was conducted independently and is not included in this repository.
