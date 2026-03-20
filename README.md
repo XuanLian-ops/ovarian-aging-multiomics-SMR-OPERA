@@ -77,6 +77,6 @@ Recommended environment: Linux (Ubuntu 20.04 or later)
 The computational pipeline consists of the following steps:
 
 1. GWAS summary statistics preprocessing  
-2. QTL data formatting and BESD conversion, SMR analysis and HEIDI test
+2. SMR analysis and HEIDI test
 3. Multi-omics integration using OPERA  
 5. Downstream analyses: Functional enrichment analysis, Single-cell analysis, Functional validation.
