@@ -61,7 +61,7 @@ All datasets used in this study are publicly available:
 
 ---
 
-## ⚙️ Software requirements
+## Software requirements
 
 - SMR v1.3.1  
 - OPERA  
@@ -72,7 +72,7 @@ Recommended environment: Linux (Ubuntu 20.04 or later)
 
 ---
 
-## 🔬 Analysis workflow
+## Analysis workflow
 
 The computational pipeline consists of the following steps:
 
