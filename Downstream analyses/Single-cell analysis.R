@@ -35,7 +35,7 @@ DimPlot(scRNA,
     legend.text = element_text(size = 11)
   )
 
-#### Step Gene expression visualization
+####  Gene expression visualization
 #Expression patterns of prioritized genes were visualized using dot plots.
 
 library(scRNAtoolVis)
@@ -72,7 +72,7 @@ jjDotPlot(object=subset(scRNA,celltype=='GC'),id = 'group',
           tile.geom=T) + coord_flip()+ coord_flip()
 
 
-#### Step Differential expression analysis
+#### Differential expression analysis
 #Differential expression analysis between age groups was performed using Seurat:
   
 
